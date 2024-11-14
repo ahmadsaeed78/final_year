@@ -1,0 +1,89 @@
+/* General reset for consistent styling */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background-color: #f4f4f9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    color: #333;
+}
+
+/* Container styling */
+.dashboard-container {
+    width: 90%;
+    max-width: 600px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+/* Navbar styling */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #333;
+    color: #fff;
+    padding: 1rem;
+    border-radius: 8px 8px 0 0;
+}
+
+.navbar h1 {
+    font-size: 1.5rem;
+}
+
+.navbar form button {
+    background-color: #e63946;
+    color: #fff;
+    border: none;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.navbar form button:hover {
+    background-color: #d62828;
+}
+
+/* Link and button styling */
+.dashboard-container a {
+    display: inline-block;
+    margin: 1rem;
+    text-decoration: none;
+}
+
+button {
+    padding: 0.8rem 1.2rem;
+    border: none;
+    background-color: #1d3557;
+    color: #fff;
+    font-size: 1rem;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #457b9d;
+}
+
+/* Disabled links */
+.disabled-link {
+    pointer-events: none;
+    color: #bbb;
+}
+
+p {
+    color: red;
+    font-weight: bold;
+}

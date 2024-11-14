@@ -1,0 +1,112 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Evaluation for {{ student.first_name }}</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <style>
+        /* General Body Styling */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+
+        /* Header Styling */
+        header {
+            background-color: #333;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2rem;
+        }
+
+        /* Container Styling */
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Form Styling */
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        form label {
+            font-size: 1rem;
+            margin-bottom: 5px;
+        }
+
+        form select {
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            font-size: 1rem;
+        }
+
+        /* Button Styling */
+        .btn {
+            background-color: #5cb85c;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .btn:hover {
+            background-color: #4cae4c;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1.5rem;
+            }
+            header h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Select Evaluation for {{ student.first_name }}</h1>
+    </header>
+
+    <div class="container">
+        <form method="get" id="evaluationForm">
+            <label for="evaluation">Choose Evaluation:</label>
+            <select id="evaluation" name="evaluation_id" required onchange="updateFormAction()">
+                <option value="" disabled selected>Select an evaluation</option>
+                {% for evaluation in evaluations %}
+                    <option value="{{ evaluation.id }}">{{ evaluation.name }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn">Proceed to Add Marks</button>
+        </form>
+    </div>
+    
+    <script>
+        function updateFormAction() {
+            const evaluationId = document.getElementById('evaluation').value;
+            const form = document.getElementById('evaluationForm');
+            form.action = `{% url 'add_marks' student.id 0 %}`.replace('/0/', `/${evaluationId}/`);
+        }
+    </script>
+</body>
+</html>

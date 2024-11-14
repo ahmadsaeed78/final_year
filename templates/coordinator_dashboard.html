@@ -1,0 +1,84 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel='stylesheet' href="{% static 'css/student.css'%}">
+    <title>Coordinator Dashboard</title>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <div class="navbar">
+        <h1>Coordinator Dashboard</h1>
+        <form action="{% url 'logout' %}" method="post">
+            {% csrf_token %}
+            <button type="submit">Logout</button>
+        </form>
+    </div>
+
+    <!-- Main Container -->
+    <div class="dashboard-container">
+        <!-- Links and Buttons -->
+        <a href="{% url 'manage_sections' %}">
+            <button>Manage Sections</button>
+        </a>
+        <a href="{% url 'approve_group' %}">
+            <button>Approve Groups</button>
+        </a>
+        
+        <a href="{% url 'create_announcement' %}">
+            <button>Create Announcement</button>
+        </a>
+        
+        <a href="{% url 'create_criteria' %}">
+            <button>Create Evaluation Criteria</button>
+        </a>
+        
+        <a href="{% url 'create_evaluation' %}">
+            <button>Create Evaluation</button>
+        </a>
+    </div>
+    <div class="registration-section">
+        <h3>Registration Controls</h3>
+        <form method="POST">
+            {% csrf_token %}
+            <button type="submit" name="toggle_student" class="{% if settings.student_registration_open %}btn-open{% else %}btn-closed{% endif %}">
+                {% if settings.student_registration_open %}Close{% else %}Open{% endif %} Student Registration
+            </button>
+            <button type="submit" name="toggle_evaluation" class="{% if settings.evaluation_registration_open %}btn-open{% else %}btn-closed{% endif %}">
+                {% if settings.evaluation_registration_open %}Close{% else %}Open{% endif %} Evaluation Panel Registration
+            </button>
+            <button type="submit" name="toggle_coordinator" class="{% if settings.coordinator_registration_open %}btn-open{% else %}btn-closed{% endif %}">
+                {% if settings.coordinator_registration_open %}Close{% else %}Open{% endif %} Coordinator Registration
+            </button>
+        </form>
+    </div>
+    <style>
+        .registration-section {
+
+            text-align: center;
+            background-color: #ffffff;
+        }
+        
+        button {
+            font-size: 16px;
+            padding: 10px 20px;
+            margin: 10px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        
+        .btn-open {
+            background-color: #4CAF50; /* Green for open */
+            color: white;
+        }
+        
+        .btn-closed {
+            background-color: #f44336; /* Red for closed */
+            color: white;
+        }
+        </style>
+        
+</body>
+</html>

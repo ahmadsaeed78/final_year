@@ -1,0 +1,129 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Submissions</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <style>
+        /* General Body Styling */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Header Styling */
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 1rem;
+            text-align: center;
+            position: relative;
+        }
+
+        /* Header Logout Button */
+        header form {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+
+        /* Main Content Styling */
+        main {
+            padding: 2rem;
+            margin: 0 auto;
+            max-width: 1000px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Table Styling */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        td a {
+            color: #007bff;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        td a:hover {
+            color: #0056b3;
+        }
+
+        /* Empty Row Styling */
+        tr.empty-row td {
+            text-align: center;
+            color: #999;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            main {
+                padding: 1rem;
+                margin: 0 10px;
+            }
+
+            table {
+                font-size: 0.9rem;
+            }
+
+            th, td {
+                padding: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Student Submissions</h1>
+        <form action="{% url 'logout' %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Logout</button>
+        </form>
+    </header>
+    
+    <main>
+        <table>
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Announcement</th>
+                    <th>Uploaded File</th>
+                    <th>Uploaded At</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for submission in submissions %}
+                <tr>
+                    <td>{{ submission.student.first_name }} {{ submission.student.last_name }}</td>
+                    <td>{{ submission.announcement.title }}</td>
+                    <td><a href="{{ submission.file.url }}" target="_blank">View File</a></td>
+                    <td>{{ submission.uploaded_at }}</td>
+                </tr>
+                {% empty %}
+                <tr class="empty-row"><td colspan="4">No submissions yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </main>
+</body>
+</html>

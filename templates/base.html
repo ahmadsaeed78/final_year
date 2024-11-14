@@ -1,0 +1,35 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Management System</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">  <!-- Add your own CSS file -->
+    <!--<link rel="stylesheet" href="{% static 'css/new.css' %}">  <!-- Add your own CSS file -->
+</head>
+<body>
+
+    <header>
+        <nav>
+            <ul>
+                <li><a href="{% url 'student_dashboard' %}">Dashboard</a></li>
+                <li><a href="{% url 'create_group' %}">Create Group</a></li>
+                <li><a href="{% url 'join_group' %}">Join Group</a></li>
+                <li><a href="{% url 'logout' %}">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        {% block content %}
+        <!-- Page specific content will go here -->
+        {% endblock %}
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Project Management System</p>
+    </footer>
+
+</body>
+</html>

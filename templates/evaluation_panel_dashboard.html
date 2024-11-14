@@ -1,0 +1,38 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel='stylesheet' href="{% static 'css/student.css'%}">
+    <title>Evaluation Panel Dashboard</title>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <div class="navbar">
+        <h1>Evaluation Panel Dashboard</h1>
+        <form action="{% url 'logout' %}" method="post">
+            {% csrf_token %}
+            <button type="submit">Logout</button>
+        </form>
+    </div>
+
+    <!-- Main Container -->
+    <div class="dashboard-container">
+        <!-- Links and Buttons -->
+        <a href="{% url 'view_groups_students' %}">
+            <button>View Groups and Students</button>
+        </a>
+        
+        <a href="{% url 'view_student_submissions' %}">
+            <button>View Submissions</button>
+        </a>
+        
+        <a href="{% url 'view_and_mark' %}">
+            <button>Mark Evaluations</button>
+        </a>
+        <a href="{% url 'mark_sections' %}">
+            <button>Mark Sections</button>
+        </a>
+    </div>
+</body>
+</html>

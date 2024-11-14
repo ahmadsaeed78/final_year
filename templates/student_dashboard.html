@@ -1,0 +1,49 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel='stylesheet' href="{% static 'css/student.css'%}">
+    <title>Student Dashboard</title>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <div class="navbar">
+        <h1>Welcome, {{ user.username }}!</h1>
+        <form action="{% url 'logout' %}" method="post">
+            {% csrf_token %}
+            <button type="submit">Logout</button>
+        </form>
+    </div>
+
+    <!-- Main Container -->
+    <div class="dashboard-container">
+        {% if messages %}
+            {% for message in messages %}
+                <p>{{ message }}</p>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Links and Buttons -->
+        <a 
+            href="{% if not disable_group_options %}{% url 'create_group' %}{% else %}#{% endif %}" 
+            class="{% if disable_group_options %}disabled-link{% endif %}">
+            <button>Create Group</button>
+        </a>
+
+        <a 
+            href="{% if not disable_group_options %}{% url 'join_group' %}{% else %}#{% endif %}" 
+            class="{% if disable_group_options %}disabled-link{% endif %}">
+            <button>Join Group</button>
+        </a>
+
+        <a href="{% url 'student_announcements' %}">
+            <button>View Announcements</button>
+        </a>
+
+        <a href="{% url 'view_result' %}">
+            <button>View Results</button>
+        </a>
+    </div>
+</body>
+</html>

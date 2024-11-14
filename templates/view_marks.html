@@ -1,0 +1,57 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Results</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+    <header>
+        <h1>Your Results</h1>
+        <form action="{% url 'logout' %}" method="post" style="position: absolute; top: 20px; right: 20px;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Logout</button>
+        </form>
+    </header>
+    
+    <main>
+        <h3>Marks for {{ student.first_name }} {{student.last_name}} - {{ evaluation.name }}</h3>
+
+<table>
+    <thead>
+        <tr>
+            <th>Criteria</th>
+            <th>Marks Obtained</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for student_mark in student_marks %}
+            <tr>
+                <td>{{ student_mark.criterion.name }}</td>
+                <td>{{ student_mark.marks_obtained }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+{% endif %}
+    </main>
+
+    <style>
+        /* Sample CSS */
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+        header { background-color: #333; color: #fff; padding: 1rem; text-align: center; }
+        table { width: 100%; border-collapse: collapse; margin: 2rem 0; }
+        th, td { padding: 0.75rem; text-align: left; border: 1px solid #ddd; }
+        th { background-color: #f4f4f4; }
+        .logout-button { position: absolute; top: 1rem; right: 1rem; color: #fff; text-decoration: none; }
+    </style>
+</body>
+</html>

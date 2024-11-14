@@ -1,0 +1,133 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mark Evaluations</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <style>
+        /* General Body Styling */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+
+        /* Header Styling */
+        header {
+            background-color: #333;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+            position: relative;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2rem;
+        }
+
+        /* Logout Button Styling */
+        .logout-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: #d9534f;
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .logout-button:hover {
+            background-color: #c9302c;
+        }
+
+        /* Main Form Styling */
+        main {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        form label {
+            font-size: 1rem;
+            margin-bottom: 5px;
+        }
+
+        form select, form button {
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+
+        form button[type="submit"] {
+            background-color: #5cb85c;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        form button[type="submit"]:hover {
+            background-color: #4cae4c;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            main {
+                padding: 1.5rem;
+            }
+            header h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Mark Evaluations</h1>
+        <form action="{% url 'logout' %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="logout-button">Logout</button>
+        </form>
+    </header>
+    
+    <main>
+        <form method="POST" action="{% url 'view_and_mark' %}">
+            {% csrf_token %}
+        
+            <!-- Student Dropdown -->
+            <label for="student_id">Student:</label>
+            <select name="student_id" id="student_id" required>
+                <option value="">Select Student</option>
+                {% for student in students %}
+                    <option value="{{ student.id }}">{{ student.first_name }} {{ student.last_name }}</option>
+                {% endfor %}
+            </select>
+            
+            <!-- Evaluation Dropdown -->
+            <label for="evaluation_id">Evaluation:</label>
+            <select name="evaluation_id" id="evaluation_id" required>
+                <option value="">Select Evaluation</option>
+                {% for evaluation in evaluations %}
+                    <option value="{{ evaluation.id }}">{{ evaluation.name }}</option>
+                {% endfor %}
+            </select>
+            
+            <button type="submit">Mark</button>
+        </form>
+    </main>
+</body>
+</html>

@@ -1,0 +1,124 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Announcements</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <style>
+        /* General Body Styling */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Header Styling */
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 1rem;
+            text-align: center;
+            position: relative;
+        }
+
+        /* Header Logout Button */
+        header form {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+
+        /* Main Content Styling */
+        main {
+            padding: 2rem;
+            margin: 0 auto;
+            max-width: 900px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            color: #333;
+            margin-top: 1rem;
+        }
+
+        p {
+            color: #555;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        /* Button Styling */
+        .announcement-btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background-color: #007bff;
+            color: #fff;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 1rem;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .announcement-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .disabled-btn {
+            padding: 0.75rem 1.5rem;
+            background-color: #e0e0e0;
+            color: #aaa;
+            cursor: not-allowed;
+            pointer-events: none;
+            text-align: center;
+            border-radius: 5px;
+            font-size: 1rem;
+            display: inline-block;
+            margin-top: 1rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            main {
+                padding: 1rem;
+                margin: 0 10px;
+            }
+
+            .announcement-btn, .disabled-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Announcement</h1>
+        <form action="{% url 'logout' %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Logout</button>
+        </form>
+    </header>
+    
+    <main>
+        {% for announcement in announcements %}
+            <h3>{{ announcement.title }}</h3>
+            <p>{{ announcement.description }}</p>
+            <p><strong>Created at:</strong> {{ announcement.created_at }}</p>
+
+            {% if uploaded_files and announcement.id in uploaded_files %}
+                <button class="disabled-btn" disabled>Uploaded</button>
+            {% else %}
+                <a href="{% url 'upload_file' announcement.id %}" class="announcement-btn">Upload Document</a>
+            {% endif %}
+        {% endfor %}
+    </main>
+</body>
+</html>

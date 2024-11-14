@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create a New Group</title>
+    <style>
+        /* General Container */
+        .container {
+            max-width: 500px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: #ffffff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        /* Header Styling */
+        h2 {
+            color: #333;
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Form Styling */
+        .form-group {
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+
+        .form-group label {
+            font-size: 1rem;
+            color: #555;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            color: #333;
+            background-color: #f9f9f9;
+            margin-top: 0.5rem;
+        }
+
+        .form-control:focus {
+            border-color: #007bff;
+            outline: none;
+            background-color: #fff;
+        }
+
+        /* Button Styling */
+        button[type="submit"] {
+            width: 100%;
+            padding: 0.8rem;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+
+        /* Back to Dashboard Link Styling */
+        .btn-secondary {
+            display: inline-block;
+            margin-top: 1rem;
+            background-color: #6c757d;
+            color: white;
+            padding: 0.7rem 1.2rem;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+
+        /* Logout Button */
+        .logout-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: #dc3545;
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            text-decoration: none;
+        }
+
+        .logout-button:hover {
+            background-color: #c82333;
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 600px) {
+            .container {
+                padding: 1.5rem;
+            }
+            h2 {
+                font-size: 1.5rem;
+            }
+            .form-control, button[type="submit"] {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Logout Button -->
+    <a href="{% url 'logout' %}" class="logout-button">Logout</a>
+
+    <div class="container">
+        <h2>Create a New Group</h2>
+
+        <!-- Form to create a new group -->
+        <form method="POST" action="{% url 'create_group' %}">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="group_name">Group Name:</label>
+                <input type="text" id="group_name" name="group_name" required class="form-control">
+            </div>
+            
+            <button type="submit">Create Group</button>
+        </form>
+
+        <!-- Link to return to dashboard -->
+        <p><a href="{% url 'student_dashboard' %}" class="btn btn-secondary">Back to Dashboard</a></p>
+    </div>
+
+</body>
+</html>

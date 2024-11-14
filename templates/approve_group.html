@@ -1,0 +1,98 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Approve Groups</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <style>
+        /* Basic Styling */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        h1 {
+            text-align: center;
+            margin: 2rem 0;
+            font-size: 2rem;
+            color: #333;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            text-align: center;
+        }
+
+        li {
+            background-color: #e9ecef;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.2rem;
+        }
+
+        li button {
+            background-color: #28a745;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+        }
+
+        li button:hover {
+            background-color: #218838;
+        }
+
+        li button:active {
+            background-color: #1e7e34;
+        }
+
+        .empty-message {
+            text-align: center;
+            font-size: 1.2rem;
+            color: #666;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            li {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            li button {
+                margin-top: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Unapproved Groups</h1>
+    
+    <ul>
+        {% for group in groups %}
+            <li>
+                <span>{{ group.name }}</span>
+                <form method="post" action="{% url 'approve_group' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="group_id" value="{{ group.id }}">
+                    <button type="submit">Approve</button>
+                </form>
+            </li>
+        {% empty %}
+            <p class="empty-message">No unapproved groups available.</p>
+        {% endfor %}
+    </ul>
+</body>
+</html>

@@ -1,0 +1,70 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mark Evaluations</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+    <header>
+        <h1>Mark Evaluations</h1>
+        <form action="{% url 'logout' %}" method="post" style="position: absolute; top: 20px; right: 20px;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Logout</button>
+        </form>
+    </header>
+    
+    <main>
+        <h1>Mark Evaluation for {{ student.first_name }} - {{ evaluation.name }}</h1>
+
+{% if already_marked %}
+    <p>This student has already been marked for this evaluation.</p>
+    <p>Marks: {{ marks }}</p>
+{% else %}
+    <form method="POST">
+        {% csrf_token %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Criterion</th>
+                    <th>Max Marks</th>
+                    <th>Marks Obtained</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for criterion in criteria %}
+                    <tr>
+                        <td>{{ criterion.name }}</td>
+                        <td>{{ criterion.marks }}</td>
+                        <td>
+                            <input type="number" name="criterion_{{ criterion.id }}" max="{{ criterion.marks }}">
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <button type="submit">Upload Marks</button>
+
+        {% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+{% endif %}
+    </form>
+{% endif %}
+
+    </main>
+
+    <style>
+        /* Sample CSS */
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+        header { background-color: #333; color: #fff; padding: 1rem; text-align: center; }
+        table { width: 100%; border-collapse: collapse; margin: 2rem 0; }
+        th, td { padding: 0.75rem; text-align: left; border: 1px solid #ddd; }
+        th { background-color: #f4f4f4; }
+        .logout-button { position: absolute; top: 1rem; right: 1rem; color: #fff; text-decoration: none; }
+    </style>
+</body>
+</html>

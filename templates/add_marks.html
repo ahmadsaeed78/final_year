@@ -1,0 +1,98 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Marks for {{ student.first_name }}</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <style>
+        /* General Body Styling */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+
+        /* Container Styling */
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Header Styling */
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: #333;
+        }
+
+        /* Form Group Styling */
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .form-group label {
+            font-size: 1rem;
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #555;
+        }
+
+        .form-group input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            font-size: 1rem;
+        }
+
+        /* Button Styling */
+        .btn {
+            background-color: #5cb85c;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #4cae4c;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1.5rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Add Marks for {{ student.first_name }} in {{ evaluation.name }}</h1>
+        <form method="post" action="{% url 'submit_marks' student.id evaluation.id %}">
+            {% csrf_token %}
+            {% for criterion in criteria %}
+                <div class="form-group">
+                    <label for="marks_{{ criterion.id }}">{{ criterion.name }}:</label>
+                    <input type="number" id="marks_{{ criterion.id }}" name="marks_{{ criterion.id }}" min="0" max="100" required>
+                </div>
+            {% endfor %}
+            <button type="submit" class="btn">Submit Marks</button>
+        </form>
+    </div>
+</body>
+</html>

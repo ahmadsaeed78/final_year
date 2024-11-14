@@ -1,0 +1,89 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Groups</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        /* General Body Styling */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Container Styling */
+        .groups-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Heading Styling */
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 1rem;
+        }
+
+        /* List Styling */
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .group-item {
+            padding: 10px;
+            margin: 10px 0;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            transition: background-color 0.3s ease;
+        }
+
+        .group-item:hover {
+            background-color: #f0f0f0;
+        }
+
+        /* Empty Message Styling */
+        .empty-message {
+            text-align: center;
+            color: #888;
+            font-style: italic;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .groups-container {
+                padding: 1.5rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .group-item {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="groups-container">
+        <h1>Groups</h1>
+        <ul>
+            {% for group in groups %}
+                <li class="group-item">{{ group.name }}</li>
+            {% empty %}
+                <p class="empty-message">No groups found.</p>
+            {% endfor %}
+        </ul>
+    </div>
+</body>
+</html>
