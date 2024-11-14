@@ -221,8 +221,7 @@ from .models import Section
 @coordinator_required
 def manage_sections(request):
     sections = Section.objects.all()
-    student_no = Section.objects.get(id=1).students.count()
-    return render(request, 'manage_sections.html', {'sections': sections, 'student': student_no })
+    return render(request, 'manage_sections.html', {'sections': sections })
 
 @coordinator_required
 def manage_section(request, section_id):
