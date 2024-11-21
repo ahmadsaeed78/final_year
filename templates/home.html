@@ -1,5 +1,4 @@
 {% load static %}
-<!-- main/home.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,35 +6,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome to Project Management System</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        /* Basic Styling */
+        /* General Styling */
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Roboto', sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f4f4f4;
+            background: url("{% static 'images/university.jpg' %}") no-repeat center center/cover;
+            color: #fff;
         }
 
         .container {
-            max-width: 1200px;
-            margin: 2rem auto;
-            text-align: center;
+            max-width: 900px;
+            margin: 4rem auto;
+            background: rgba(0, 0, 0, 0.8); /* Transparent background over the image */
             padding: 2rem;
-            background-color: #fff;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
+            border-radius: 10px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
         }
 
         h1 {
-            font-size: 2rem;
+            font-size: 2.5rem;
             margin-bottom: 1rem;
-            color: #333;
+            text-align: center;
+            color: #fff;
         }
 
         p {
             font-size: 1.2rem;
-            color: #555;
+            text-align: center;
             margin-bottom: 2rem;
+            color: #dcdcdc;
         }
 
         .options {
@@ -46,24 +48,24 @@
         }
 
         .option {
-            background-color: #e9ecef;
+            background-color: rgba(255, 255, 255, 0.1);
             padding: 2rem;
-            border-radius: 8px;
-            width: 250px;
+            border-radius: 10px;
+            width: 280px;
             text-align: center;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
         .option:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            transform: translateY(-8px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.5);
         }
 
         .option h2 {
             font-size: 1.5rem;
-            color: #333;
-            margin-bottom: 1rem;
+            color: #fff;
+            margin-bottom: 1.5rem;
         }
 
         .button {
@@ -71,19 +73,32 @@
             background-color: #007bff;
             color: #fff;
             padding: 0.8rem 1.5rem;
-            margin: 0.5rem;
-            text-decoration: none;
             border-radius: 5px;
+            text-decoration: none;
             font-size: 1rem;
-            transition: background-color 0.3s ease;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
         }
 
         .button:hover {
             background-color: #0056b3;
+            box-shadow: 0 5px 15px rgba(0, 123, 255, 0.5);
         }
 
-        .button:active {
-            background-color: #004085;
+        .alert {
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
         }
 
         @media (max-width: 768px) {
@@ -101,10 +116,10 @@
 <body>
     <div class="container">
         {% if messages %}
-    {% for message in messages %}
-        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-    {% endfor %}
-    {%endif%}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
         <h1>Welcome to Project Management System</h1>
         <p>Please choose your role to login or register:</p>
         
@@ -114,41 +129,24 @@
                 <h2>Register as Student</h2>
                 <a href="{% url 'register_student' %}" class="button">Register as Student</a>
             </div>
-            {%endif%}
+            {% endif %}
             {% if evaluation_registration_open %}
             <div class="option">
                 <h2>Register as Evaluation Panel</h2>
                 <a href="{% url 'register_evaluation_member' %}" class="button">Register as Evaluation Panel</a>
             </div>
-            {%endif%}
+            {% endif %}
             {% if coordinator_registration_open %}
             <div class="option">
                 <h2>Register as Coordinator</h2>
                 <a href="{% url 'register_coordinator' %}" class="button">Register as Coordinator</a>
             </div>
-            {%endif%}
+            {% endif %}
             <div class="option">
                 <h2>Login</h2>
                 <a href="{% url 'login' %}" class="button">Login</a>
             </div>
         </div>
     </div>
-<style>
-    .alert {
-        padding: 10px;
-        margin-bottom: 15px;
-        border-radius: 5px;
-    }
-    
-    .alert-error {
-        background-color: #f8d7da;
-        color: #721c24;
-    }
-    
-    .alert-success {
-        background-color: #d4edda;
-        color: #155724;
-    }
-    </style>
 </body>
 </html>
