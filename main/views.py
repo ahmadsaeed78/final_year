@@ -354,39 +354,57 @@ def view_and_mark_evaluations(request):
 
 @evaluation_panel_required
 def evaluation_criteria(request, student_id, evaluation_id):
-    # Get the selected student and evaluation
-    student = get_object_or_404(CustomUser, id=student_id)
+    student = get_object_or_404(CustomUser, id=student_id, user_type='student')
     evaluation = get_object_or_404(Evaluation, id=evaluation_id)
+    evaluator = request.user
 
-    existing_marks = StudentMarking.objects.filter(student=student, evaluation=evaluation)
-    if existing_marks.exists():
-        messages.error(request, "Marks have already been uploaded for this evaluation.")
-        return render(request, 'view_and_mark.html', {'student_id': student_id, 'evaluation_id': evaluation_id})  # Redirect to a suitable page
     # Fetch the evaluation criteria for the selected evaluation
     criteria = EvaluationCriteria.objects.filter(evaluation=evaluation)
 
     if request.method == 'POST':
-        # Process the form submission for marks
         for criterion in criteria:
-            mark = request.POST.get(f'criteria_marks_{criterion.id}')
-            if mark:
-                # Save the mark in StudentMarking model
-                StudentMarking.objects.create(
+            marks_obtained = request.POST.get(f'criteria_marks_{criterion.id}')
+            if marks_obtained:
+                marks_obtained = int(marks_obtained)  # Ensure integer conversion
+                # Check for existing mark entry
+                existing_mark = StudentMarking.objects.filter(
                     student=student,
                     evaluation=evaluation,
                     criterion=criterion,
-                    marks_obtained=mark
-                )
-        messages.success(request, "Marks uploaded successfully.")
-        return redirect('view_marks', student_id=student.id, evaluation_id=evaluation.id)
+                    evaluator=evaluator
+                ).first()
+
+                if existing_mark:
+                    # Update the existing mark
+                    existing_mark.marks_obtained = marks_obtained
+                    existing_mark.save()
+                    messages.success(request, f"Updated marks for {student.username} - {criterion.name}.")
+                else:
+                    # Create a new mark entry
+                    StudentMarking.objects.create(
+                        student=student,
+                        evaluation=evaluation,
+                        criterion=criterion,
+                        marks_obtained=marks_obtained,
+                        evaluator=evaluator
+                    )
+                    messages.success(request, f"Marks added for {student.username} - {criterion.name}.")
+        return redirect('view_and_mark')
+
+    # Prepare marks data for display (if needed for the template)
+    existing_marks = {
+        mark.criterion.id: mark.marks_obtained for mark in
+        StudentMarking.objects.filter(student=student, evaluation=evaluation, evaluator=evaluator)
+    }
 
     return render(request, 'evaluation_criteria.html', {
         'student': student,
         'evaluation': evaluation,
-        'criteria': criteria
+        'criteria': criteria,
+        'existing_marks': existing_marks
     })
 
-
+'''
 @evaluation_panel_required
 def view_and_mark_evaluation(request, student_id, evaluation_id):
     # Get the evaluation and student objects
@@ -428,6 +446,7 @@ def view_and_mark_evaluation(request, student_id, evaluation_id):
         'student': student,
         'criteria': criteria
     })
+    '''
 @evaluation_panel_required
 def view_marks(request, student_id, evaluation_id):
     # Get the selected student and evaluation
@@ -467,36 +486,84 @@ def add_marks(request, student_id, evaluation_id):
     student = get_object_or_404(CustomUser, id=student_id)
     evaluation = get_object_or_404(Evaluation, id=evaluation_id)
     criteria = EvaluationCriteria.objects.filter(evaluation=evaluation)
-    return render(request, 'add_marks.html', {'student': student, 'evaluation': evaluation, 'criteria': criteria})
+    evaluator = request.user  # Assumes the evaluator is the logged-in user
+    # Fetch existing marks for display in the template
+    existing_marks = {
+        mark.criterion.id: mark.marks_obtained for mark in
+        StudentMarking.objects.filter(student=student, evaluation=evaluation, evaluator=evaluator)
+    }
+
+    # Render the form for marks entry
+    return render(request, 'add_marks.html', {
+        'student': student,
+        'evaluation': evaluation,
+        'criteria': criteria,
+        'existing_marks': existing_marks
+    })
+
 
 @evaluation_panel_required
 def submit_marks(request, student_id, evaluation_id):
+    # Get the student and evaluation objects
     student = get_object_or_404(CustomUser, id=student_id, user_type='student')
     evaluation = get_object_or_404(Evaluation, id=evaluation_id)
+    evaluator = request.user  # Assumes the evaluator is the logged-in user
+
+    # Fetch evaluation criteria for the selected evaluation
     criteria = EvaluationCriteria.objects.filter(evaluation=evaluation)
 
     if request.method == "POST":
         for criterion in criteria:
-            # Retrieve the marks for each criterion from the form
-            marks_obtained = request.POST.get(f'marks_{criterion.id}')
-            
-            # Save the marks for each criterion in the StudentMarking model
-            StudentMarking.objects.create(
-                student=student,
-                evaluation=evaluation,
-                criterion=criterion,
-                marks_obtained=marks_obtained
-            )
-        
-        # Redirect to the mark section page after saving marks
+            # Retrieve marks obtained from the form input
+            marks_obtained = request.POST.get(f'criteria_marks_{criterion.id}')
+            if marks_obtained:
+                marks_obtained = int(marks_obtained)  # Convert input to integer
+
+                # Check if a mark entry already exists
+                existing_mark = StudentMarking.objects.filter(
+                    student=student,
+                    evaluation=evaluation,
+                    criterion=criterion,
+                    evaluator=evaluator
+                ).first()
+
+                if existing_mark:
+                    # Update the existing mark
+                    existing_mark.marks_obtained = marks_obtained
+                    existing_mark.save()
+                    messages.success(
+                        request, f"Updated marks for {student.username} - {criterion.name}."
+                    )
+                else:
+                    # Create a new mark entry
+                    StudentMarking.objects.create(
+                        student=student,
+                        evaluation=evaluation,
+                        criterion=criterion,
+                        marks_obtained=marks_obtained,
+                        evaluator=evaluator
+                    )
+                    messages.success(
+                        request, f"Marks added for {student.username} - {criterion.name}."
+                    )
+
+        # Redirect to a page (e.g., Mark Section) after processing marks
         return redirect('mark_section', section_id=student.section.id)
-    
-    # Render the marks entry form for each criterion if GET request
+
+    # Fetch existing marks for display in the template
+    existing_marks = {
+        mark.criterion.id: mark.marks_obtained for mark in
+        StudentMarking.objects.filter(student=student, evaluation=evaluation, evaluator=evaluator)
+    }
+
+    # Render the form for marks entry
     return render(request, 'add_marks.html', {
         'student': student,
         'evaluation': evaluation,
-        'criteria': criteria
+        'criteria': criteria,
+        'existing_marks': existing_marks
     })
+
 
 # views.py
 

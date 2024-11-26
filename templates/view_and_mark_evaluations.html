@@ -83,7 +83,11 @@
         form button[type="submit"]:hover {
             background-color: #4cae4c;
         }
-
+        .error-message {
+            color: #ff4d4f;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
         /* Responsive Design */
         @media (max-width: 768px) {
             main {
@@ -105,6 +109,11 @@
     </header>
     
     <main>
+        {% if messages %}
+            {% for message in messages %}
+                <p class="error-message">{{ message }}</p>
+            {% endfor %}
+        {% endif %}
         <form method="POST" action="{% url 'view_and_mark' %}">
             {% csrf_token %}
         

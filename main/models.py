@@ -114,10 +114,15 @@ class StudentMarking(models.Model):
     student = models.ForeignKey(CustomUser, on_delete=models.CASCADE, limit_choices_to={'user_type': 'student'})
     evaluation = models.ForeignKey(Evaluation, on_delete=models.CASCADE)
     criterion = models.ForeignKey(EvaluationCriteria, on_delete=models.CASCADE)
+    evaluator = models.ForeignKey(CustomUser, on_delete=models.CASCADE, limit_choices_to={'user_type': 'evaluation_member'}, related_name='evaluations_made')
     marks_obtained = models.PositiveIntegerField()
 
+    class Meta:
+        unique_together = ('student', 'evaluation', 'criterion', 'evaluator')  # Ensures unique marks per evaluator
+
     def __str__(self):
-        return f"{self.student} - {self.evaluation.name} - {self.criterion.name}"
+        return f"{self.student.username} - {self.evaluation.name} - {self.criterion.name} - {self.evaluator.username}"
+
 
 
 class Settings(models.Model):

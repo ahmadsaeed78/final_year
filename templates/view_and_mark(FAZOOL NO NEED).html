@@ -1,6 +1,4 @@
 {% load static %}
-{% load custom_filters %}
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -23,11 +21,32 @@
 
         {% if messages %}
             {% for message in messages %}
-                <div class="alert alert-{{ message.tags }}">{{ message }}</diva
+                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
             {% endfor %}
         {% endif %}
 
-       
+        {% if existing_marks %}
+            <p>The student has already been marked for this evaluation.</p>
+            <h3>Existing Marks:</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Criterion</th>
+                        <th>Marks Obtained</th>
+                        <th>Max Marks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for mark in criteria %}
+                        <tr>
+                            <td>{{ mark.name }}</td>
+                            <td>{{ existing_marks|get_item:mark.id }}</td>
+                            <td>{{ mark.max_marks }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
             <form method="POST">
                 {% csrf_token %}
                 <table>
@@ -42,7 +61,7 @@
                         {% for criterion in criteria %}
                             <tr>
                                 <td>{{ criterion.name }}</td>
-                                <td>{{ criterion.marks }}</td>
+                                <td>{{ criterion.max_marks }}</td>
                                 <td>
                                     <input 
                                         type="number" 
@@ -59,7 +78,7 @@
                 </table>
                 <button type="submit" class="btn btn-primary">Submit Marks</button>
             </form>
-    
+        {% endif %}
     </main>
 
     <style>
