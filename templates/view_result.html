@@ -58,29 +58,26 @@
             border-radius: 8px;
         }
 
-        ul {
-            list-style: none;
-            padding: 0;
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
         }
 
-        li {
-            background-color: #e9ecef;
-            margin-bottom: 0.5rem;
-            padding: 1rem;
-            border-radius: 6px;
-            display: flex;
-            justify-content: space-between;
-            font-size: 1rem;
+        th, td {
+            padding: 0.8rem;
             text-align: left;
+            border: 1px solid #ddd;
         }
 
-        li span {
+        th {
+            background-color: #f4f4f4;
+            font-weight: bold;
+        }
+
+        td span {
             font-weight: bold;
             color: #495057;
-        }
-
-        li:last-child {
-            margin-bottom: 0;
         }
 
         /* Responsive Styling */
@@ -110,14 +107,35 @@
     </header>
     
     <main>
-        <ul>
-            {% for result in results %}
-                <li>
-                    <span>{{ result.evaluation.name }}</span> - 
-                    <span>{{ result.criterion.name }}: {{ result.marks_obtained }} / {{ result.criterion.marks }}</span>
-                </li>
+        <h2>Aggregated Results</h2>
+        {% if grouped_results %}
+            {% for evaluation, criteria in grouped_results.items %}
+                <!-- Evaluation Heading -->
+                <h3>{{ evaluation }}</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Criterion</th>
+                            <th>Aggregate Marks</th>
+                            <th>Maximum Marks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for criterion in criteria %}
+                        <tr>
+                            <td>{{ criterion.criterion }}</td>
+                            <td>
+                                <span>{{ criterion.aggregate_marks|floatformat:2 }}</span>
+                            </td>
+                            <td>{{ criterion.max_marks }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             {% endfor %}
-        </ul>
+        {% else %}
+            <p>No results found.</p>
+        {% endif %}
     </main>
 </body>
 </html>

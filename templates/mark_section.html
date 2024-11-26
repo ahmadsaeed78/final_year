@@ -1,4 +1,5 @@
 {% load static %}
+{% load custom_filters %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -114,6 +115,7 @@
                     <th>Name</th>
                     <th>Username</th>
                     <th>Group Name</th>
+                    <th>Total Marks</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -124,13 +126,14 @@
                     <td>{{ student.first_name }} {{ student.last_name }}</td>
                     <td>{{ student.username }}</td>
                     <td>{{ student.get_group_name }}</td>
+                    <td>{{ student_totals|get_item:student.id|floatformat:2 }}</td>
                     <td>
                         <a href="{% url 'select_evaluation' student.id %}" class="btn">Add Marks</a>
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="5">No students in this section.</td>
+                    <td colspan="6">No students in this section.</td>
                 </tr>
                 {% endfor %}
             </tbody>

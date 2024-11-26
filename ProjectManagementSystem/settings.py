@@ -83,18 +83,14 @@ WSGI_APPLICATION = 'ProjectManagementSystem.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'final_year',
-        'USER': 'final_year',
-        'PASSWORD': 'final_year',
-        'HOST': 'localhost',
-        'PORT': '3306',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'postgres',
+        'USER': 'postgres.ftkoapeiienskenphpaz',
+        'PASSWORD': 'Bangash787898',
+        'HOST': 'aws-0-ap-south-1.pooler.supabase.com',
+        'PORT': '6543',
     }
 }
-
-import dj_database_url
-
-DATABASES['default'] = dj_database_url.parse('postgresql://postgres_7xdw_user:eiGXApqAtmLMieXUKxLNjmfCDilaiTRN@dpg-csr51s9opnds73b5m70g-a.oregon-postgres.render.com/postgres_7xdw')
 
 
 # Password validation

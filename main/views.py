@@ -90,12 +90,32 @@ def view_announcements(request):
         'uploaded_files': uploaded_files
     })
 
+from django.db.models import Avg
+from collections import defaultdict
 
 @student_required
 def view_result(request):
-    results = StudentMarking.objects.filter(student=request.user)
-    return render(request, 'view_result.html', {'results': results})
+    # Grouping marks by evaluation and criterion, calculating the average
+    results = (
+        StudentMarking.objects.filter(student=request.user)
+        .values('evaluation__name', 'criterion__name', 'criterion__marks')
+        .annotate(aggregate_marks=Avg('marks_obtained'))
+    )
 
+    # Grouping results by evaluation
+    grouped_results = defaultdict(list)
+    for result in results:
+        evaluation_name = result['evaluation__name']
+        grouped_results[evaluation_name].append({
+            'criterion': result['criterion__name'],
+            'aggregate_marks': result['aggregate_marks'],
+            'max_marks': result['criterion__marks']
+        })
+
+    # Convert defaultdict to a regular dictionary for template usage
+    grouped_results = dict(grouped_results)
+
+    return render(request, 'view_result.html', {'grouped_results': grouped_results})
 
 # views.py
 from .models import Settings
@@ -468,12 +488,41 @@ def mark_sections(request):
     sections = Section.objects.all()
     return render(request, 'mark_sections.html', {'sections': sections})
 
+from django.db.models import Avg
 
 @evaluation_panel_required
 def mark_section(request, section_id):
     section = Section.objects.get(id=section_id)
     students = CustomUser.objects.filter(section=section)
-    return render(request, 'mark_section.html', {'section': section, 'students': students})
+    
+    # Dictionary to hold total marks for each student
+    student_totals = {}
+
+    for student in students:
+        # Get average marks for each criterion and evaluation
+        marks = (
+            StudentMarking.objects.filter(student=student)
+            .values('evaluation__name', 'criterion__name', 'criterion__marks')
+            .annotate(avg_marks=Avg('marks_obtained'))
+        )
+        
+        # Calculate the total marks as the sum of averages
+        total_marks = sum(
+            min(mark['avg_marks'], mark['criterion__marks'])  # Ensure marks do not exceed the max for the criterion
+            for mark in marks
+        )
+        student_totals[student.id] = total_marks
+
+    return render(
+        request,
+        'mark_section.html',
+        {
+            'section': section,
+            'students': students,
+            'student_totals': student_totals,
+        }
+    )
+
 
 @evaluation_panel_required
 def select_evaluation(request, student_id):
