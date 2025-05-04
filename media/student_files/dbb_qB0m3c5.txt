@@ -1,0 +1,10 @@
+mysql> create database fyp_management;
+ERROR 1007 (HY000): Can't create database 'fyp_management'; database exists
+mysql> create database final_year;
+Query OK, 1 row affected (0.12 sec)
+
+mysql> CREATE USER 'final_year'@'localhost' IDENTIFIED BY 'final_year';
+Query OK, 0 rows affected (0.24 sec)
+
+
+GRANT ALL PRIVILEGES ON final_year.* TO 'final_year'@'localhost';

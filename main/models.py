@@ -110,13 +110,15 @@ class Evaluation(models.Model):
     def __str__(self):
         return self.name
 
+
+from django.utils import timezone
 class StudentMarking(models.Model):
     student = models.ForeignKey(CustomUser, on_delete=models.CASCADE, limit_choices_to={'user_type': 'student'})
     evaluation = models.ForeignKey(Evaluation, on_delete=models.CASCADE)
     criterion = models.ForeignKey(EvaluationCriteria, on_delete=models.CASCADE)
     evaluator = models.ForeignKey(CustomUser, on_delete=models.CASCADE, limit_choices_to={'user_type': 'evaluation_member'}, related_name='evaluations_made')
     marks_obtained = models.PositiveIntegerField()
-
+    evaluated_at      = models.DateTimeField(auto_now_add=True)
     class Meta:
         unique_together = ('student', 'evaluation', 'criterion', 'evaluator')  # Ensures unique marks per evaluator
 

@@ -16,13 +16,14 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.conf import settings
-from django.urls import path
+from django.urls import path, include
 from django.conf.urls.static import static
 from main import views
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/', include('main.urls')),
     path('', views.home, name='home'),
     path('register/student/', views.register_student, name='register_student'),
     path('register/evaluation-member/', views.register_evaluation_member, name='register_evaluation_member'),
@@ -61,7 +62,59 @@ urlpatterns = [
     path('evaluation/add_marks/<int:student_id>/<int:evaluation_id>/', views.add_marks, name='add_marks'),
     path('evaluation/submit_marks/<int:student_id>/<int:evaluation_id>/', views.submit_marks, name='submit_marks'),
     #path('approve-group/<int:group_id>/', views.approve_group, name='approve_group'),
+    #API
 ]
+
+
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from main.views import (
+    CustomUserViewSet, SectionViewSet, StudentMarkingViewSet, StudentFileUploadViewSet, RegistrationStatusView, login_view, toggle_registration, StudentsInSectionView, remove_student_from_section, CurrentUserView
+)
+
+router = DefaultRouter()
+router.register(r'users', CustomUserViewSet)
+#router.register(r'announcements', AnnouncementViewSet)
+#router.register(r'groups', GroupViewSet)
+#router.register(r'evaluations', EvaluationViewSet)
+#router.register(r'evaluation-criteria', EvaluationCriteriaViewSet)
+router.register(r'sections', SectionViewSet)
+router.register(r'student-markings', StudentMarkingViewSet)
+router.register(r'student-submissions', StudentFileUploadViewSet)
+
+from main.views import CreateAnnouncementAPIView, AnnouncementListView, UnapprovedGroupListView, get_evaluation_criteria, create_evaluation_criteria, EvaluationListCreateView, EvaluationDetailView
+from main import views
+from main.views import EvaluationListView, EvaluationCriteriaView, SubmitMarksView, EvaluationStudentMarksView, GroupAnnouncementFilesAPIView
+
+urlpatterns += [
+    path('api/', include(router.urls)),
+    path("api/registration-status/", RegistrationStatusView.as_view(), name="registration_status"),
+    path('api/toggle-registration/', toggle_registration, name='toggle-registration'),
+    path('api/sections/<int:section_id>/students/', StudentsInSectionView.as_view(), name='students_in_section'),
+    path('api/sections/<int:section_id>/students/<int:student_id>/', remove_student_from_section),
+    path('api/unassigned-students/', views.unassigned_students, name='unassigned_students'),
+    path('api/sections/<int:section_id>/add-student/<int:student_id>/', views.add_student_to_section, name='add_student_to_section'),
+    #path("api/login/", login_view, name="login"),
+    path('api/auth/user/', CurrentUserView.as_view(), name='current_user'),
+    path("api/announcements/create/", CreateAnnouncementAPIView.as_view(), name="create_announcement"),
+    path('api/announcements/', AnnouncementListView.as_view(), name='announcement-list'),
+    path('api/groups/unapproved/', UnapprovedGroupListView.as_view(), name='unapproved-groups'),
+    path('api/evaluation-criteria/', get_evaluation_criteria, name='get_evaluation_criteria'),
+    path('api/evaluation-criteria-create/', create_evaluation_criteria, name='create_evaluation_criteria'),
+    path('api/evaluation-criteria/<int:pk>/', views.EvaluationCriteriaDetail.as_view(), name='evaluation-criteria-detail'),
+    path('api/evaluations/', EvaluationListCreateView.as_view(), name='evaluation-list-create'),
+    path('api/evaluations/<int:pk>/', EvaluationDetailView.as_view(), name='evaluation-detail'),
+    path('api/evaluator/evaluations/', EvaluationListView.as_view(), name='evaluation-list'),
+    path('api/evaluator/evaluations/<int:evaluation_id>/criteria/', EvaluationCriteriaView.as_view(), name='evaluation-criteria'),
+    path('api/evaluator/evaluations/<int:student_id>/<int:evaluation_id>/submit_marks/', SubmitMarksView.as_view(), name='submit-marks'),
+    path('api/evaluator/evaluations/<int:evaluation_id>/<int:student_id>/marks/', EvaluationStudentMarksView.as_view(), name='evaluation_student_marks'),
+    path('api/groups/<int:group_id>/announcement-files/', GroupAnnouncementFilesAPIView.as_view(), name='group-announcement-files'),
+    # Add registration API endpoints
+    path('api/register/student/', views.register_student, name='register_student'),
+    path('api/register/evaluator/', views.register_evaluator, name='register_evaluator'),
+    path('api/register/coordinator/', views.register_coordinator, name='register_coordinator'),
+]
+
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

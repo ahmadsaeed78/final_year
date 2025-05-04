@@ -780,3 +780,979 @@ def view_groups(request):
     # Fetch all groups to display
     groups = Group.objects.all()
     return render(request, 'view_groups.html', {'groups': groups})
+
+
+
+
+
+#below are APIS
+
+from rest_framework import viewsets, permissions
+from .models import CustomUser, Announcement, Group, Evaluation, EvaluationCriteria, Section, StudentMarking, StudentFileUpload
+from .serializers import (
+    CustomUserSerializer, AnnouncementSerializer, GroupSerializer, EvaluationSerializer, 
+    EvaluationCriteriaSerializer, SectionSerializer, StudentMarkingSerializer, StudentFileUploadSerializer
+)
+from rest_framework.decorators import action
+from rest_framework.response import Response
+
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth import authenticate
+
+class LoginAPIView(APIView):
+    permission_classes = [AllowAny]  # Allow any user to access this view
+
+    def post(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
+
+        if not username or not password:
+            return Response({"detail": "Username and password are required."}, status=400)
+
+        # Authenticate the user
+        user = authenticate(username=username, password=password)
+
+        if user is not None:
+            # Generate token
+            #login(request, user)
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                'refresh': str(refresh),
+                'access_token': str(refresh.access_token),
+                'role': user.user_type,
+            })
+        else:
+            return Response({"detail": "Invalid credentials."}, status=401)
+
+
+
+
+class CustomUserViewSet(viewsets.ModelViewSet):
+    queryset = CustomUser.objects.all()
+    serializer_class = CustomUserSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def perform_create(self, serializer):
+        user_type = self.request.data.get('user_type', 'student')
+        serializer.save(user_type=user_type)
+'''
+class AnnouncementViewSet(viewsets.ModelViewSet):
+    queryset = Announcement.objects.all()
+    serializer_class = AnnouncementSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    @action(detail=False, methods=['get'])
+    def get_announcements(self, request):
+        announcements = self.queryset.all()
+        serializer = self.get_serializer(announcements, many=True)
+        return Response(serializer.data)
+
+class GroupViewSet(viewsets.ModelViewSet):
+    queryset = Group.objects.all()
+    serializer_class = GroupSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+
+
+class EvaluationCriteriaViewSet(viewsets.ModelViewSet):
+    queryset = EvaluationCriteria.objects.all()
+    serializer_class = EvaluationCriteriaSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+class EvaluationViewSet(viewsets.ModelViewSet):
+    queryset = Evaluation.objects.all()
+    serializer_class = EvaluationSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    @action(detail=True, methods=['get'])
+    def get_criteria(self, request, pk=None):
+        evaluation = self.get_object()
+        criteria = EvaluationCriteria.objects.filter(evaluation=evaluation)
+        serializer = EvaluationCriteriaSerializer(criteria, many=True)
+        return Response(serializer.data)
+'''
+
+class SectionViewSet(viewsets.ModelViewSet):
+    queryset = Section.objects.all()
+    serializer_class = SectionSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+class StudentMarkingViewSet(viewsets.ModelViewSet):
+    queryset = StudentMarking.objects.all()
+    serializer_class = StudentMarkingSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    @action(detail=True, methods=['get'])
+    def get_marks(self, request, pk=None):
+        student_markings = StudentMarking.objects.filter(student=pk)
+        serializer = StudentMarkingSerializer(student_markings, many=True)
+        return Response(serializer.data)
+
+class StudentFileUploadViewSet(viewsets.ModelViewSet):
+    queryset = StudentFileUpload.objects.all()
+    serializer_class = StudentFileUploadSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    @action(detail=True, methods=['get'])
+    def get_submissions(self, request, pk=None):
+        student_file_uploads = StudentFileUpload.objects.filter(student=pk)
+        serializer = StudentFileUploadSerializer(student_file_uploads, many=True)
+        return Response(serializer.data)
+
+
+from rest_framework.permissions import AllowAny
+from rest_framework.views import APIView
+from rest_framework.response import Response
+
+class RegistrationStatusView(APIView):
+    permission_classes = [AllowAny]  # Allow anyone to access this endpoint
+
+    def get(self, request, *args, **kwargs):
+        settings = Settings.objects.first()
+        if not settings:
+            return Response(
+                {
+                    "student_registration_open": False,
+                    "evaluation_registration_open": False,
+                    "coordinator_registration_open": False,
+                }
+            )
+
+        return Response(
+            {
+                "student_registration_open": settings.student_registration_open,
+                "evaluation_registration_open": settings.evaluation_registration_open,
+                "coordinator_registration_open": settings.coordinator_registration_open,
+            }
+        )
+
+
+'''
+from django.contrib.auth import authenticate, login
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
+
+@csrf_exempt
+def login_view(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        username = data.get("username")
+        password = data.get("password")
+
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            # Assume `user.role` contains the role (e.g., "student", "coordinator", "evaluation")
+            role = getattr(user, "user_type", "unknown")  # Replace with actual logic for role assignment
+            return JsonResponse({"message": "Login successful", "role": role}, status=200)
+        else:
+            return JsonResponse({"error": "Invalid credentials"}, status=400)
+
+    return JsonResponse({"error": "Invalid request method"}, status=405)
+
+'''
+'''
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
+from .models import Settings
+
+@api_view(['POST'])
+def toggle_registration(request):
+    """
+    Toggle the registration status for student, coordinator, or evaluation panel.
+    """
+    type_mapping = {
+        'student': 'student_registration_open',
+        'evaluation': 'evaluation_registration_open',
+        'coordinator': 'coordinator_registration_open',
+    }
+    
+    data = request.data
+    reg_type = data.get('type')
+    
+    if reg_type not in type_mapping:
+        return Response(
+            {"error": "Invalid registration type"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    # Get the settings object (assuming there's only one settings row)
+    settings, created = Settings.objects.get_or_create(id=1)  # Default ID for single-row settings
+    
+    # Toggle the corresponding field
+    field_name = type_mapping[reg_type]
+    current_status = getattr(settings, field_name, False)
+    new_status = not current_status
+    setattr(settings, field_name, new_status)
+    settings.save()
+    
+    return Response(
+        {"registration_state": new_status},
+        status=status.HTTP_200_OK
+    )
+'''
+
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.response import Response
+from .models import Settings
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def toggle_registration(request):
+    reg_type = request.data.get('type')
+    settings = Settings.objects.first()
+
+    if not settings:
+        settings = Settings.objects.create()
+
+    if reg_type == 'student_registration_open':
+        settings.student_registration_open = not settings.student_registration_open
+    elif reg_type == 'evaluation_registration_open':
+        settings.evaluation_registration_open = not settings.evaluation_registration_open
+    elif reg_type == 'coordinator_registration_open':
+        settings.coordinator_registration_open = not settings.coordinator_registration_open
+
+    settings.save()
+    return Response({reg_type: getattr(settings, reg_type)})
+
+
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import NotFound
+from .models import Section, CustomUser
+from .serializers import CustomUserSerializer
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import NotFound
+from .models import Section, CustomUser
+from .serializers import CustomUserSerializer
+
+class StudentsInSectionView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, section_id):
+        try:
+            section = Section.objects.get(id=section_id)
+        except Section.DoesNotExist:
+            raise NotFound({"error": "Section not found."})
+
+        # Fetch students in the section
+        students = CustomUser.objects.filter(section=section, user_type='student')
+        serializer = CustomUserSerializer(students, many=True)
+        return Response(serializer.data)
+
+from rest_framework import status
+
+@api_view(['DELETE'])
+def remove_student_from_section(request, section_id, student_id):
+    try:
+        section = Section.objects.get(id=section_id)
+        student = CustomUser.objects.get(id=student_id, section=section)
+        student.section = None  # Or perform any required logic
+        student.save()
+        return Response({"detail": "Student removed from section"}, status=status.HTTP_204_NO_CONTENT)
+    except Section.DoesNotExist:
+        return Response({"detail": "Section not found"}, status=status.HTTP_404_NOT_FOUND)
+    except CustomUser.DoesNotExist:
+        return Response({"detail": "Student not found in section"}, status=status.HTTP_404_NOT_FOUND)
+
+
+# views.py
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
+from .models import Section
+from .serializers import CustomUserSerializer
+
+@api_view(['GET'])
+def unassigned_students(request):
+    # Get students that are not assigned to this section
+    unassigned_students = CustomUser.objects.filter(user_type='student', section_id=None)
+
+    # Serialize and return the list of unassigned students
+    serializer = CustomUserSerializer(unassigned_students, many=True)
+    return Response(serializer.data)
+
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import get_object_or_404
+from .models import Section
+import json
+
+@csrf_exempt
+def add_student_to_section(request, section_id, student_id):
+    if request.method == 'POST':
+        try:
+            # Fetch the section and student
+            section = get_object_or_404(Section, id=section_id)
+            student = get_object_or_404(CustomUser, id=student_id)
+
+            # Check if the student is already in a section
+            if student.section is not None:
+                return JsonResponse(
+                    {"error": "Student is already assigned to a section."},
+                    status=400
+                )
+
+            # Assign the student to the section
+            student.section = section
+            student.save()
+
+            return JsonResponse(
+                {"message": "Student added successfully."},
+                status=200
+            )
+
+        except Exception as e:
+            return JsonResponse(
+                {"error": f"An error occurred: {str(e)}"},
+                status=500
+            )
+
+    return JsonResponse({"error": "Invalid request method."}, status=405)
+
+
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from django.contrib.auth.models import User
+
+class CurrentUserView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        return Response({
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "role": user.user_type
+        })
+
+
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from .models import Announcement
+
+class CreateAnnouncementAPIView(APIView):
+    """
+    Handle creation of announcements using POST method.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        title = request.data.get("title")
+        description = request.data.get("description")
+        coordinator = request.user  # Ensure the user is authenticated
+
+        if not title or not description:
+            return Response({"error": "Title and description are required."}, status=400)
+
+        # Save the announcement
+        Announcement.objects.create(
+            title=title, description=description, coordinator=coordinator
+        )
+        return Response({"message": "Announcement created successfully!"}, status=201)
+
+
+from rest_framework.permissions import IsAuthenticated
+
+class AnnouncementListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        announcements = Announcement.objects.all().order_by('-created_at')
+        serializer = AnnouncementSerializer(announcements, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+
+@api_view(['GET'])
+def get_approved_groups(request):
+    groups = Group.objects.filter(is_approved=True).prefetch_related('members')
+    serializer = GroupSerializer(groups, many=True)
+    return Response(serializer.data)
+
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from .models import Group
+from .serializers import GroupSerializer
+
+class UnapprovedGroupListView(APIView):
+    permission_classes = [IsAuthenticated]  # Ensures only authenticated users can access
+
+    def get(self, request):
+        # Query for unapproved groups
+        groups = Group.objects.filter(is_approved=False)
+        serializer = GroupSerializer(groups, many=True)  # Serialize the data
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+
+@api_view(['POST'])
+def approve_group(request, pk):
+    group = get_object_or_404(Group, pk=pk)
+    group.is_approved = True
+    group.save()
+    return Response({"success": f"Group '{group.name}' approved!"})
+
+
+
+from .serializers import EvaluationCriteriaSerializer
+
+@api_view(['GET'])
+def get_evaluation_criteria(request):
+    criteria = EvaluationCriteria.objects.all()
+    serializer = EvaluationCriteriaSerializer(criteria, many=True)
+    return Response(serializer.data)
+
+
+# views.py
+from .serializers import EvaluationCriteriaSerializer
+
+@api_view(['POST'])
+def create_evaluation_criteria(request):
+    """
+    Create a new evaluation criterion.
+    """
+    if request.method == 'POST':
+        serializer = EvaluationCriteriaSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()  # Save the new evaluation criteria
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+from rest_framework import generics
+from main.models import EvaluationCriteria
+from main.serializers import EvaluationCriteriaSerializer
+
+class EvaluationCriteriaDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = EvaluationCriteria.objects.all()
+    serializer_class = EvaluationCriteriaSerializer
+
+
+
+
+from rest_framework import generics
+from .models import Evaluation
+from .serializers import EvaluationSerializer, EvaluationCreateSerializer
+
+class EvaluationListCreateView(generics.ListCreateAPIView):
+    queryset = Evaluation.objects.all()
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return EvaluationCreateSerializer
+        return EvaluationSerializer
+
+class EvaluationDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Evaluation.objects.all()
+    serializer_class = EvaluationSerializer
+
+
+#student module group func
+
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from .models import Group
+from .serializers import GroupSerializer
+from django.contrib.auth.models import User
+
+# Fetch logged-in student's group
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def fetch_student_group(request):
+    user = request.user
+    group = Group.objects.filter(members=user).first()
+    if group:
+        serializer = GroupSerializer(group)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response({"detail": "No group found for the student."}, status=status.HTTP_404_NOT_FOUND)
+
+# List all approved groups
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def fetch_approved_groups(request):
+    groups = Group.objects.filter(is_approved=True)
+    serializer = GroupSerializer(groups, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+# Create a new group
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_group(request):
+    user = request.user
+    group_name = request.data.get('group_name')
+    if not group_name:
+        return Response({"error": "Group name is required."}, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Ensure user is not part of any existing group
+    if Group.objects.filter(members=user).exists():
+        return Response({"error": "You are already part of a group."}, status=status.HTTP_400_BAD_REQUEST)
+
+    group = Group.objects.create(name=group_name, is_approved=False)
+    group.members.add(user)  # Add the logged-in user to the group
+    serializer = GroupSerializer(group)
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+# Join an existing group
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def join_group(request):
+    user = request.user
+    group_id = request.data.get('group_id')
+    if not group_id:
+        return Response({"error": "Group ID is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        group = Group.objects.get(id=group_id)
+    except Group.DoesNotExist:
+        return Response({"error": "Group not found."}, status=status.HTTP_404_NOT_FOUND)
+    
+    # Check if the group is approved and not full
+    if not group.is_approved:
+        return Response({"error": "Cannot join a group that is not approved."}, status=status.HTTP_400_BAD_REQUEST)
+    if group.members.count() >= 3:
+        return Response({"error": "Group is already full."}, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Ensure user is not part of any other group
+    if Group.objects.filter(members=user).exists():
+        return Response({"error": "You are already part of a group."}, status=status.HTTP_400_BAD_REQUEST)
+
+    group.members.add(user)
+    serializer = GroupSerializer(group)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from .models import Announcement, StudentFileUpload
+from .serializers import AnnouncementSerializer
+
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from django.conf import settings
+from django.db.models import Q
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_announcements(request):
+    announcements = Announcement.objects.all()
+    user = request.user
+    group = Group.objects.filter(members=user).first()
+
+    uploaded_files = {}
+
+    if group:
+        # Get all members of the group
+        group_members = group.members.all()
+
+        # Check if any group member has uploaded files for the announcements
+        group_uploaded_files = StudentFileUpload.objects.filter(
+            student__in=group_members
+        ).select_related('announcement', 'student')
+
+        # Populate the uploaded_files dictionary with the announcement and file link
+        uploaded_files = {
+            file.announcement.id: request.build_absolute_uri(file.file.url)
+            for file in group_uploaded_files
+        }
+
+    # Serialize announcements
+    serialized_announcements = AnnouncementSerializer(announcements, many=True).data
+
+    return Response({"announcements": serialized_announcements, "uploaded_files": uploaded_files})
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def upload_announcement_file(request, announcement_id):
+    try:
+        announcement = Announcement.objects.get(id=announcement_id)
+        if request.method == "POST" and request.FILES.get("file"):
+            file = request.FILES["file"]
+            StudentFileUpload.objects.create(
+                announcement=announcement, student=request.user, file=file
+            )
+            return Response({"success": "File uploaded successfully."}, status=201)
+    except Announcement.DoesNotExist:
+        return Response({"error": "Announcement not found."}, status=404)
+    return Response({"error": "Invalid request."}, status=400)
+
+
+
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from .models import Group, StudentMarking
+
+@api_view(['GET'])
+def get_groups(request):
+    # Fetch all groups and their details
+    groups = Group.objects.all()
+    group_data = []
+    evaluators = CustomUser.objects.filter(user_type="evaluation_member")
+    for group in groups:
+        members = []
+        for member in group.members.all():
+            student_marks = StudentMarking.objects.filter(student=member)
+            each_evaluator_marks = StudentMarking.objects.filter(student=member,evaluator = request.user.id)
+            # Calculate aggregated marks (average of all evaluators' marks)
+            total_marks = sum([mark.marks_obtained for mark in student_marks])
+            total_marks_each_evaluator = sum([mark.marks_obtained for mark in each_evaluator_marks])
+            average_marks = total_marks / len(evaluators)
+            members.append({
+                "id": member.id,
+                "name": member.first_name + " " + member.last_name,
+                "username": member.username,
+                "section": member.section.name,  # Assuming you have a section attribute
+                "total_marks": total_marks_each_evaluator,
+                "marks": average_marks
+            })
+        
+        group_data.append({
+            "id": group.id,
+            "name": group.name,
+            "members": members
+        })
+
+    return Response({"groups": group_data})
+
+
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from .models import Evaluation, Group
+
+class GetEvaluationsAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request, student_id):
+        try:
+            student = get_object_or_404(CustomUser, id=student_id, user_type='student')
+            
+            # Fetch the evaluations based on the student
+            evaluations = Evaluation.objects.filter(studentmarking__student=student)
+            evaluation_data = []
+
+            for evaluation in evaluations:
+                criteria = evaluation.criteria.all()
+                criteria_data = [
+                    {"id": criterion.id, "name": criterion.name, "max_marks": criterion.marks}
+                    for criterion in criteria
+                ]
+                evaluation_data.append({
+                    "id": evaluation.id,
+                    "name": evaluation.name,
+                    "criteria": criteria_data,
+                })
+            
+            return Response({"evaluations": evaluation_data})
+        except Group.DoesNotExist or CustomUser.DoesNotExist:
+            return Response({"error": "Group or Student not found"}, status=404)
+
+
+
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from .models import Evaluation, EvaluationCriteria, StudentMarking
+
+class EvaluationListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        evaluations = Evaluation.objects.all()
+        data = [
+            {
+                'id': evaluation.id,
+                'name': evaluation.name
+            }
+            for evaluation in evaluations
+        ]
+        return Response({'evaluations': data})
+
+
+class EvaluationCriteriaView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, evaluation_id):
+        evaluation = Evaluation.objects.get(id=evaluation_id)
+        criteria = EvaluationCriteria.objects.filter(evaluation=evaluation)
+        data = [
+            {
+                'id': criterion.id,
+                'name': criterion.name,
+                'max_marks': criterion.marks
+            }
+            for criterion in criteria
+        ]
+        return Response({'criteria': data})
+
+
+class SubmitMarksView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, student_id, evaluation_id):
+        evaluation = Evaluation.objects.get(id=evaluation_id)
+        student = CustomUser.objects.get(id=student_id)
+        marks_data = request.data.get('marks', [])
+        evaluator = CustomUser.objects.get(id=request.user.id)
+
+        for mark in marks_data:
+            criterion_id = mark.get('criterion_id')
+            marks_obtained = mark.get('marks_obtained')
+
+            # Save or update the marks for each criterion
+            StudentMarking.objects.update_or_create(
+                student = student,
+                evaluation=evaluation,
+                criterion_id=criterion_id,
+                evaluator=evaluator,
+                defaults={'marks_obtained': marks_obtained}
+            )
+
+        return Response({'message': 'Marks updated successfully!'})
+
+
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
+from .models import StudentMarking
+from .serializers import StudentMarkingSerializer
+
+class EvaluationStudentMarksView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, evaluation_id, student_id):
+        try:
+            # Get the current evaluator
+            evaluator = request.user
+            
+            # Fetch marks for the given evaluation, student, and evaluator
+            marks = StudentMarking.objects.filter(
+                evaluation_id=evaluation_id, 
+                student_id=student_id,
+                evaluator=evaluator
+            )
+            
+            # Serialize the data
+            serialized_marks = [
+                {
+                    "criterion_id": mark.criterion.id,
+                    "criterion_name": mark.criterion.name,
+                    "marks_obtained": mark.marks_obtained,
+                }
+                for mark in marks
+            ]
+            
+            return Response({"marks": serialized_marks}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+from .serializers import AnnouncementSerializer
+
+class GroupAnnouncementsAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, group_id):
+        try:
+            group = Group.objects.get(id=group_id)
+            announcements = group.announcements.all()
+            data = {
+                "group_id": group.id,
+                "group_name": group.name,
+                "announcements": AnnouncementSerializer(announcements, many=True).data
+            }
+            return Response(data, status=200)
+        except Group.DoesNotExist:
+            return Response({"error": "Group not found."}, status=404)
+        
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from django.contrib.auth import get_user_model
+from .models import Announcement, StudentFileUpload
+from .models import Group  # Assuming you have a Group model
+
+User = get_user_model()
+class GroupAnnouncementFilesAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, group_id):
+        try:
+            # Get the group and its members
+            group = Group.objects.get(id=group_id)
+            students = group.members.filter(user_type='student')
+
+            # Fetch announcements related to the group
+            announcements = Announcement.objects.filter()  # Parentheses added here
+
+            result = []
+            for announcement in announcements:
+                uploaded_files = StudentFileUpload.objects.filter(
+                    announcement=announcement,
+                    student__in=students
+                )
+
+                # Collect file data
+                files = [
+                    {
+                        "student_id": file.student.id,
+                        "student_name": f"{file.student.first_name} {file.student.last_name}",
+                        "file_url": request.build_absolute_uri(file.file.url),
+                        "uploaded_at": file.uploaded_at
+                    }
+                    for file in uploaded_files
+                ]
+
+                result.append({
+                    "id": announcement.id,
+                    "title": announcement.title,
+                    "description": announcement.description,
+                    "files": files if files else None
+                })
+
+            return Response({"group_id": group_id, "announcements": result}, status=200)
+        except Group.DoesNotExist:
+            return Response({"error": "Group not found."}, status=404)
+
+
+
+
+
+
+
+# evaluations/views.py
+
+from rest_framework import generics, permissions
+from rest_framework.response import Response
+
+from .models import Evaluation
+from .serializers import EvaluationResultSerializer
+
+class StudentEvaluationResultsView(generics.ListAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class   = EvaluationResultSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        print(f"Fetching evaluation results for user: {user.username}")
+        queryset = Evaluation.objects.filter(
+            studentmarking__student=user
+        ).distinct().order_by('-studentmarking__evaluated_at')
+        print(f"Found {queryset.count()} evaluations")
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        print("Processing list request")
+        qs = self.get_queryset()
+        page = self.paginate_queryset(qs)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            data = serializer.data
+            print(f"Returning {len(data)} evaluations")
+            return self.get_paginated_response(data)
+        serializer = self.get_serializer(qs, many=True)
+        data = serializer.data
+        print(f"Returning {len(data)} evaluations (non-paginated)")
+        return Response({ 'evaluations': data })
+
+from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+from .models import Settings
+from .serializers import (
+    StudentRegistrationSerializer,
+    EvaluatorRegistrationSerializer,
+    CoordinatorRegistrationSerializer
+)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def register_student(request):
+    settings = Settings.objects.first()
+    if not settings or not settings.student_registration_open:
+        return Response(
+            {"detail": "Student registration is currently closed."},
+            status=status.HTTP_403_FORBIDDEN
+        )
+
+    serializer = StudentRegistrationSerializer(data=request.data)
+    if serializer.is_valid():
+        user = serializer.save()
+        return Response(
+            {"detail": "Student registered successfully."},
+            status=status.HTTP_201_CREATED
+        )
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def register_evaluator(request):
+    settings = Settings.objects.first()
+    if not settings or not settings.evaluation_registration_open:
+        return Response(
+            {"detail": "Evaluator registration is currently closed."},
+            status=status.HTTP_403_FORBIDDEN
+        )
+
+    serializer = EvaluatorRegistrationSerializer(data=request.data)
+    if serializer.is_valid():
+        user = serializer.save()
+        return Response(
+            {"detail": "Evaluator registered successfully."},
+            status=status.HTTP_201_CREATED
+        )
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def register_coordinator(request):
+    settings = Settings.objects.first()
+    if not settings or not settings.coordinator_registration_open:
+        return Response(
+            {"detail": "Coordinator registration is currently closed."},
+            status=status.HTTP_403_FORBIDDEN
+        )
+
+    serializer = CoordinatorRegistrationSerializer(data=request.data)
+    if serializer.is_valid():
+        user = serializer.save()
+        return Response(
+            {"detail": "Coordinator registered successfully."},
+            status=status.HTTP_201_CREATED
+        )
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
